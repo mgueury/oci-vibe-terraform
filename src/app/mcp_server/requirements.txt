@@ -1,0 +1,8 @@
+# FastMCP
+fastmcp
+
+#DB26ai
+oracledb
+
+# OAuth Caching 
+aiocache
