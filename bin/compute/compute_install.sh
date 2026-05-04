@@ -69,6 +69,9 @@ if ! grep -q "# Build Bastion" $HOME/.bashrc; then
         cp $HOME/compute/git/post-receive ~/app.git/hooks
         chmod +x ~/app.git/hooks/post-receive
         chmod +x ~/app.git/hooks/post-receive
+
+        # Cline CLI
+        install_cline_cli
     fi
 fi
 

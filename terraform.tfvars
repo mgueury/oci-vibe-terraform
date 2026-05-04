@@ -15,3 +15,8 @@ your_public_ssh_key="__TO_FILL__"
 # Compartment
 compartment_ocid="__TO_FILL__"
 
+# Generative AI - OpenAI Compatible key
+# api_key = "sk-xxxxxx"
+
+# Generative AI - Model (ex: xai.grok-code-fast-1 / xai.grok-4.20-0309-reasoning / meta.llama-4-maverick-17b-128e-instruct-fp8 / openai.gpt-oss-120b / google.gemini-2.5-flash)
+# genai_model = xai.grok-code-fast-1
