@@ -16,7 +16,8 @@ your_public_ssh_key="__TO_FILL__"
 compartment_ocid="__TO_FILL__"
 
 # Generative AI - OpenAI Compatible key
-# genai_apikey = "sk-xxxxxx"
+# XXXX Please create the key in Chicago (Your tenancy need to be enabled for the Chicago region)
+genai_apikey="__TO_FILL__"
+genai_model="xai.grok-4.20-0309-non-reasoning"
 
-# Generative AI - Model (ex: xai.grok-code-fast-1 / xai.grok-4.20-0309-reasoning / meta.llama-4-maverick-17b-128e-instruct-fp8 / openai.gpt-oss-120b / google.gemini-2.5-flash)
-# genai_model = xai.grok-code-fast-1
+# Generative AI - Model (ex: xai.grok-code-fast-1 / xai.grok-4.20-0309-reasoning / xai.grok-4.20-0309-non-reasoning / meta.llama-4-maverick-17b-128e-instruct-fp8 / openai.gpt-oss-120b / google.gemini-2.5-flash)
