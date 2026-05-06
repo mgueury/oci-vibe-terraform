@@ -1,0 +1,26 @@
+# HTTP
+requests
+flask
+waitress
+
+# LangChain
+langchain
+langchain_community
+
+unstructured
+qdrant-client
+PyPDF2
+pdfminer
+pdfminer.six
+pdfplumber
+pdf2image
+pytesseract
+
+# Oracle OCI
+oci
+
+# Oracle DB
+oracledb
+
+# StreamLit
+streamlit

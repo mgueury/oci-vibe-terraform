@@ -305,7 +305,7 @@ install_cline_cli() {
     if [ "$TF_VAR_genai_api_key" == "" ] || [ "$TF_VAR_genai_model" == "" ] || [ "$TF_VAR_region" == "" ]; then
         echo "<install_cline_cli> SKIP: Missing variables TF_VAR_genai_api_key=$TF_VAR_genai_api_key / TF_VAR_genai_model=$TF_VAR_genai_model / TF_VAR_region=$TF_VAR_region"
     else 
-        cline auth -p openai -k $TF_VAR_api_key -b https://inference.generativeai.${TF_VAR_region}.oci.oraclecloud.com -m $TF_VAR_genai_model
+        cline auth -p openai -k $TF_VAR_genai_api_key -b https://inference.generativeai.${TF_VAR_region}.oci.oraclecloud.com -m $TF_VAR_genai_model
     fi 
     # xai.grok-4-1-fast-non-reasoning
 }

@@ -1,17 +1,40 @@
 #!/bin/bash
-set -e
+set -eu
+mkdir -p "$HOME/devops"
 
-APP_GIT_DIR="$HOME/app"
-BRANCH="master"
+# Get commit id (short hash)
+COMMIT_ID=$(git --git-dir="$HOME/app.git" rev-parse --short HEAD)
 
-echo "Deploy triggered for $BRANCH"
+# Date postfix
+DATE_POSTFIX=$(date '+%Y%m%d-%H%M%S')
 
-# Update working tree
-git --work-tree="$APP_GIT_DIR" --git-dir="$HOME/app.git" checkout -f "$BRANCH"
+# Combine both
+RUN_ID="${DATE_POSTFIX}_${COMMIT_ID}"
 
+# Logs
+REBUILD_LOG="$HOME/devops/rebuild.${RUN_ID}.log"
+DOC_LOG="$HOME/devops/doc.${RUN_ID}.log"
+SECURITY_LOG="$HOME/devops/security.${RUN_ID}.log"
+COMMITS_LOG="$HOME/devops/commits.$RUN_ID"
+
+while read oldrev newrev refname
+do
+    echo "$oldrev $newrev $refname" >> "$COMMITS_LOG"
+done
+
+# Remove duplicates in case multiple refs include the same commit
+sort -u "$COMMITS_LOG" -o "$COMMITS_LOG"
+
+# Update working tree in $HOME/app
+git --work-tree="$HOME/app" --git-dir="$HOME/app.git" checkout -f "master"
 # Optional: ensure latest (usually not needed, but safe)
-git --work-tree="$APP_GIT_DIR" --git-dir="$HOME/app.git" pull origin "$BRANCH" || true
+git --work-tree="$HOME/app" --git-dir="$HOME/app.git" pull origin "master" || true
 
-# Run rebuild script
-DATE_POSTFIX=`date '+%Y%m%d-%H%M%S'`
-$HOME/compute/rebuild.sh >> "$HOME/compute/rebuild.$DATE_POSTFIX.log" 2>&1 &
+echo "Rebuild: See $REBUILD_LOG"
+$HOME/compute/rebuild.sh >> $REBUILD_LOG 2>&1 &
+
+echo "Documentation: See $DOC_LOG"
+$HOME/compute/git/post_receive_doc.sh < $COMMITS_LOG >> $DOC_LOG 2>&1 &
+
+echo "Security: See $SECURITY_LOG"
+$HOME/compute/git/post_receive_security.sh < $COMMITS_LOG >> $SECURITY_LOG 2>&1 &
