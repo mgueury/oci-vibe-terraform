@@ -300,7 +300,7 @@ export -f install_nodejs
 
 install_cline_cli() {
     install_nodejs
-    npm install -g cline
+    sudo npm install -g cline
     cline version
     if [ "$TF_VAR_genai_api_key" == "" ] || [ "$TF_VAR_genai_model" == "" ] || [ "$TF_VAR_region" == "" ]; then
         echo "<install_cline_cli> SKIP: Missing variables TF_VAR_genai_api_key=$TF_VAR_genai_api_key / TF_VAR_genai_model=$TF_VAR_genai_model / TF_VAR_region=$TF_VAR_region"
