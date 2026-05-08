@@ -9,6 +9,14 @@ get_ui_url
 echo 
 echo "Build done"
 
+DB_URL='(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=a5l7miaw.adb.us-chicago-1.oraclecloud.com))(connect_data=(service_name=gaed7f4ac794a14_vibeatpyuiy_medium.adb.oraclecloud.com))(security=(ssl_server_dn_match=no)))'
+
+# Extract host value
+DB_HOST=$(echo "$DB_URL" | sed -n 's/.*(host=\([^)]*\)).*/\1/p')
+
+# Replace host with localhost
+DB_URL_LOCALHOST=$(echo "$DB_URL" | sed 's/(host=[^)]*)/(host=localhost)/')
+
 # Do not show the Done URLs if after_build.sh exists 
 if [ "$UI_URL" != "" ]; then
     echo "URLs" > $FILE_DONE
@@ -22,6 +30,16 @@ if [ "$UI_URL" != "" ]; then
         append_done "- REST: $UI_URL/app/dept"
         append_done "- REST: $UI_URL/app/info"    
     fi
+    append_done "-----------------------------------------------------------------------"
+    append_done "DB connection:"
+    append_done
+    append_done "DB_USER=$DB_USER"
+    append_done "DB_PASSWORD=$DB_PASSWORD"
+    append_done "DB_URL=$DB_URL"
+    append_done
+    append_done "ssh -L1521:$DB_HOST:1521 opc@$BASTION_IP"
+    append_done "sql $DB_USER/$DB_PASSWORD@$DB_URL_LOCALHOST"
+    append_done
     append_done "-----------------------------------------------------------------------"
     append_done "Vibe Coding (Build done in Bastion):"
     append_done
