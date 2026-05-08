@@ -33,8 +33,10 @@ git --work-tree="$HOME/app" --git-dir="$HOME/app.git" pull origin "master" || tr
 echo "Rebuild: See $REBUILD_LOG"
 $HOME/compute/rebuild.sh >> $REBUILD_LOG 2>&1 &
 
-echo "Documentation: See $DOC_LOG"
-$HOME/compute/git/post_receive_doc.sh < $COMMITS_LOG >> $DOC_LOG 2>&1 &
-
-echo "Security: See $SECURITY_LOG"
-$HOME/compute/git/post_receive_security.sh < $COMMITS_LOG >> $SECURITY_LOG 2>&1 &
+for POST_SH in $HOME/devops/bin/*.sh; do
+    POST_NAME=$(echo "$POST_SH" | sed -n 's#.*/bin/\([^)]*\)\.sh/\1/p')
+    echo $POST_NAME 
+    POST_LOG=DOC_LOG="$HOME/devops/${POST_NAME}.${RUN_ID}.log"
+    echo "POST_NAME: See $POST_LOG"
+    $POST_SH < $COMMITS_LOG >> $POST_LOG 2>&1 &
+done
