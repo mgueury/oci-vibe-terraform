@@ -11,7 +11,7 @@ echo "COMPUTE_IP=$COMPUTE_IP"
 # Create the target/compute directory
 cp $TARGET_DIR/tf_env.sh $TARGET_DIR/compute/compute/.
 
-if -d src/compute; then 
+if [ -d src/compute ]; then 
     cp -R src/compute/* $TARGET_DIR/compute/.
 fi
 
