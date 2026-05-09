@@ -26,4 +26,8 @@ resource "null_resource" "custom_dependency" {
         EOT
     }
     depends_on = [ null_resource.tf_env ]
+
+    triggers = {
+        always_run = "${timestamp()}"
+    }   
 }
