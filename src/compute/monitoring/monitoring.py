@@ -28,6 +28,7 @@ CLINE_CMD = os.environ.get("CLINE_CMD", "cline").split()
 LOG = logging.getLogger("logwatch")
 LOG.setLevel(logging.DEBUG)
 
+
 @dataclass
 class RuleCache:
     normal: List[Dict[str, Any]]
@@ -263,6 +264,7 @@ def insert_warning(
 
 
 def call_cline(prompt: str) -> Dict[str, Any]:
+    # LOG.info(f"<call_cline> length={len(prompt)}")          
     LOG.info(f"<call_cline> {prompt}")          
     proc = subprocess.run(
         CLINE_CMD,
@@ -288,35 +290,79 @@ def call_cline(prompt: str) -> Dict[str, Any]:
         }
 
 
-def llm_classify(app_name: str, file_path: str, line: str) -> Dict[str, Any]:
-    LOG.info("<llm_classify>")        
+def llm_classify_batch(
+    app_name: str, file_path: str, lines: List[str]
+) -> List[Dict[str, Any]]:
+    """Classify a batch of log lines with a single LLM call."""
+    if not lines:
+        return []
+
+    # Join lines with clear separators for the LLM
+    log_lines_str = "\n---\n".join([f"LINE {i+1}: {line}" for i, line in enumerate(lines)])
+
     prompt = f"""
-You classify a log line for application: {app_name}
+You classify multiple log lines for application: {app_name}
 File: {file_path}
 
-Return ONLY valid JSON with keys:
-severity: one of ["normal", "warning", "error"]
-reason: short explanation
-suggested_regex: optional regex that could catch this pattern later, or null
-confidence: number from 0 to 1
+Return ONLY a valid JSON array of objects. One object per input line (preserve order).
+Each object must have keys:
+- severity: one of ["normal", "warning", "error"]
+- reason: short explanation
+- suggested_regex: optional regex that could catch this pattern later, or null
+- confidence: number from 0 to 1
+- pattern_type: "normal" or "error" (only if suggested_regex is provided and confidence >= 0.8)
 
 Example of output:
 [
-  { "severity": "normal", "reason": "normal line", "suggested_regex": "Success .*", "confidence": "1" }
+  {{ "severity": "normal", "reason": "normal line", "suggested_regex": null, "confidence": 1.0, "pattern_type": null }},
+  {{ "severity": "warning", "reason": "suspicious activity", "suggested_regex": "Failed login.*", "confidence": 0.85, "pattern_type": "error" }}
 ]
 
 Rules:
 - If the line is clearly normal, severity = "normal"
 - If it is suspicious but not clearly an error, severity = "warning"
 - If it is an error, severity = "error"
-- If you can learn a useful regex, include it in suggested_regex and set pattern_type accordingly.
+- If you can learn a useful regex, include it in suggested_regex, set pattern_type, and confidence >=0.8
 - Prefer compact regexes that are specific enough not to overmatch.
+- Process ALL lines. Do not skip any.
 
-Log line:
-{line}
+Log lines:
+{log_lines_str}
 """.strip()
 
-    return call_cline(prompt)
+    try:
+        result = call_cline(prompt)
+        # Handle both list and wrapped object responses
+        if isinstance(result, dict) and "severity" in result:
+            # Single result fallback (should not happen)
+            return [result] * len(lines)
+        if isinstance(result, list):
+            # Pad or truncate to match input length
+            while len(result) < len(lines):
+                result.append({
+                    "severity": "warning",
+                    "reason": "LLM response incomplete",
+                    "suggested_regex": None,
+                    "pattern_type": None,
+                    "confidence": 0.0,
+                })
+            return result[:len(lines)]
+        return [{
+            "severity": "warning",
+            "reason": f"Unexpected LLM response type: {type(result)}",
+            "suggested_regex": None,
+            "pattern_type": None,
+            "confidence": 0.0,
+        }] * len(lines)
+    except Exception as exc:
+        LOG.exception("LLM batch failed for %s: %s", file_path, exc)
+        return [{
+            "severity": "warning",
+            "reason": f"LLM failed: {exc}",
+            "suggested_regex": None,
+            "pattern_type": None,
+            "confidence": 0.0,
+        }] * len(lines)
 
 
 def maybe_learn_rule(
@@ -359,7 +405,7 @@ def process_file(
     log_path: Path,
     rules: RuleCache,
 ) -> None:
-    LOG.info(f"<process_file> {app_dir}")      
+    LOG.info(f"<process_file> {log_path}")      
     app_name = app_dir.name
     state = get_state(conn, str(log_path))
     inode, file_size, file_mtime = file_identity(log_path)
@@ -373,6 +419,9 @@ def process_file(
         offset = 0
 
     line_no = 0
+    batch: List[Tuple[int, str]] = []  # (line_no, line)
+    BATCH_SIZE = 200
+
     with open(log_path, "r", encoding="utf-8", errors="replace") as f:
         f.seek(offset)
         while True:
@@ -382,11 +431,12 @@ def process_file(
                 break
 
             line_no += 1
-            line = line.rstrip("\n")
-            if line=="": 
-                break
+            stripped = line.rstrip("\n")
+            if not stripped:  # skip empty lines
+                offset = f.tell()
+                continue
 
-            severity, matched_rule = classify_by_regex(line, rules)
+            severity, matched_rule = classify_by_regex(stripped, rules)
 
             if severity == "normal":
                 offset = f.tell()
@@ -398,7 +448,7 @@ def process_file(
                     app_name=app_name,
                     file_path=str(log_path),
                     line_no=line_no,
-                    line=line,
+                    line=stripped,
                     severity="error",
                     source="regex",
                     matched_rule=matched_rule,
@@ -407,36 +457,18 @@ def process_file(
                 offset = f.tell()
                 continue
 
-            try:
-                llm_result = llm_classify(app_name, str(log_path), line)
-            except Exception as exc:
-                LOG.exception("LLM failed for %s: %s", log_path, exc)
-                llm_result = {
-                    "severity": "warning",
-                    "reason": f"LLM failed: {exc}",
-                    "suggested_regex": None,
-                    "pattern_type": None,
-                    "confidence": 0.0,
-                }
-
-            severity = str(llm_result.get("severity", "warning")).lower()
-            reason = llm_result.get("reason")
-
-            if severity in {"warning", "error"}:
-                insert_warning(
-                    conn=conn,
-                    app_name=app_name,
-                    file_path=str(log_path),
-                    line_no=line_no,
-                    line=line,
-                    severity=severity,
-                    source="llm",
-                    matched_rule=None,
-                    llm_reason=reason,
-                )
-
-            maybe_learn_rule(conn, app_name, rules, llm_result)
+            # Unknown -> collect for LLM batch
+            batch.append((line_no, stripped))
             offset = f.tell()
+
+            # Process batch when full or at end of file
+            if len(batch) >= BATCH_SIZE:
+                process_batch(conn, app_name, str(log_path), batch, rules)
+                batch = []
+
+    # Process any remaining lines in final batch
+    if batch:
+        process_batch(conn, app_name, str(log_path), batch, rules)
 
     upsert_state(
         conn=conn,
@@ -447,6 +479,40 @@ def process_file(
         file_size=file_size,
         file_mtime=file_mtime,
     )
+
+
+def process_batch(
+    conn: oracledb.Connection,
+    app_name: str,
+    file_path: str,
+    batch: List[Tuple[int, str]],
+    rules: RuleCache,
+) -> None:
+    """Send a batch of unknown lines to LLM in one call and process results."""
+    if not batch:
+        return
+
+    lines = [line for _, line in batch]
+    llm_results = llm_classify_batch(app_name, file_path, lines)
+
+    for (ln, line_text), llm_result in zip(batch, llm_results):
+        severity = str(llm_result.get("severity", "warning")).lower()
+        reason = llm_result.get("reason")
+
+        if severity in {"warning", "error"}:
+            insert_warning(
+                conn=conn,
+                app_name=app_name,
+                file_path=file_path,
+                line_no=ln,
+                line=line_text,
+                severity=severity,
+                source="llm",
+                matched_rule=None,
+                llm_reason=reason,
+            )
+
+        maybe_learn_rule(conn, app_name, rules, llm_result)
 
 
 def main() -> int:

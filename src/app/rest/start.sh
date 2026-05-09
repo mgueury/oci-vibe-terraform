@@ -9,5 +9,6 @@ export MCP_SERVER_URL="http://localhost:2025/mcp"
 # Start LangGraph CompiledStateGraph on port 2024
 source myenv/bin/activate
 cd agent
-langgraph dev --port 8080 --host 0.0.0.0 2>&1 | tee ../rest.log
+export LOG_COLOR=false
+langgraph dev --no-reload --port 8080 --host 0.0.0.0 2>&1 | tee ../rest.log
 
