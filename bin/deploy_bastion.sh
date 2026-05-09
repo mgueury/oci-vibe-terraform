@@ -42,13 +42,14 @@ function setup_bastion_dir() {
 }
 
 function scp_bastion() {
-    scp_or_rsync $BASTION_DIR
+    scp_or_rsync $BASTION_DIR/compute/*    
     RESULT=$?
     if [ $RESULT -eq 0 ]; then
-        echo "Success - scp $BASTION_DIR"
+        echo "Success - scp $BASTION_DIR/compute"
     else
         return 1 
     fi
+    scp_or_rsync $BASTION_DIR/app
 }
 
 # Try 5 times to copy the files / wait 5 secs between each try
