@@ -26,7 +26,7 @@ DB_URL = os.environ["DB_URL"]
 CLINE_CMD = os.environ.get("CLINE_CMD", "cline").split()
 
 LOG = logging.getLogger("logwatch")
-
+LOG.setLevel(logging.DEBUG)
 
 @dataclass
 class RuleCache:
@@ -56,6 +56,7 @@ def file_identity(path: Path) -> Tuple[int, int, float]:
 
 
 def get_state(conn: oracledb.Connection, file_path: str) -> Optional[Dict[str, Any]]:
+    LOG.info("<get_state>")
     with conn.cursor() as cur:
         cur.execute(
             """
@@ -87,6 +88,7 @@ def upsert_state(
     file_size: int,
     file_mtime: float,
 ) -> None:
+    LOG.info("<upsert_state>")
     aware_dt = datetime.fromtimestamp(file_mtime, tz=timezone.utc)
     with conn.cursor() as cur:
         cur.execute(
@@ -122,6 +124,7 @@ def upsert_state(
 
 
 def load_rules_from_db(conn: oracledb.Connection, app_name: str) -> RuleCache:
+    LOG.info(f"<load_rules_from_db> {app_name}")
     with conn.cursor() as cur:
         cur.execute(
             """
@@ -164,6 +167,7 @@ def upsert_rule(
     source: str = "llm",
     confidence: Optional[float] = None,
 ) -> None:
+    LOG.info("<upsert_rule>")    
     with conn.cursor() as cur:
         cur.execute(
             """
@@ -204,6 +208,7 @@ def upsert_rule(
 
 
 def classify_by_regex(line: str, rules: RuleCache) -> Tuple[str, Optional[str]]:
+    LOG.info("<classify_by_regex>")        
     for rule in rules.error:
         pattern = rule.get("regex", "")
         if pattern and re.search(pattern, line):
@@ -228,6 +233,7 @@ def insert_warning(
     matched_rule: Optional[str],
     llm_reason: Optional[str],
 ) -> None:
+    LOG.info(f"<insert_warning> {app_name} line_no={line_no} line={line}")       
     line_hash = sha256(f"{app_name}|{file_path}|{line}".encode("utf-8")).hexdigest()
     with conn.cursor() as cur:
         cur.execute(
@@ -257,6 +263,7 @@ def insert_warning(
 
 
 def call_cline(prompt: str) -> Dict[str, Any]:
+    LOG.info(f"<call_cline> {prompt}")          
     proc = subprocess.run(
         CLINE_CMD,
         input=prompt,
@@ -269,6 +276,7 @@ def call_cline(prompt: str) -> Dict[str, Any]:
 
     out = proc.stdout.strip()
     try:
+        LOG.info(f"<call_cline> out={out}")          
         return json.loads(out)
     except json.JSONDecodeError:
         return {
@@ -281,6 +289,7 @@ def call_cline(prompt: str) -> Dict[str, Any]:
 
 
 def llm_classify(app_name: str, file_path: str, line: str) -> Dict[str, Any]:
+    LOG.info("<llm_classify>")        
     prompt = f"""
 You classify a log line for application: {app_name}
 File: {file_path}
@@ -289,8 +298,12 @@ Return ONLY valid JSON with keys:
 severity: one of ["normal", "warning", "error"]
 reason: short explanation
 suggested_regex: optional regex that could catch this pattern later, or null
-pattern_type: one of ["normal", "error", null]
 confidence: number from 0 to 1
+
+Example of output:
+[
+  { "severity": "normal", "reason": "normal line", "suggested_regex": "Success .*", "confidence": "1" }
+]
 
 Rules:
 - If the line is clearly normal, severity = "normal"
@@ -312,6 +325,7 @@ def maybe_learn_rule(
     rules: RuleCache,
     llm_result: Dict[str, Any],
 ) -> bool:
+    LOG.info("<maybe_learn_rule>")      
     regex_text = llm_result.get("suggested_regex")
     pattern_type = llm_result.get("pattern_type")
     confidence = float(llm_result.get("confidence") or 0.0)
@@ -345,6 +359,7 @@ def process_file(
     log_path: Path,
     rules: RuleCache,
 ) -> None:
+    LOG.info(f"<process_file> {app_dir}")      
     app_name = app_dir.name
     state = get_state(conn, str(log_path))
     inode, file_size, file_mtime = file_identity(log_path)
@@ -368,6 +383,8 @@ def process_file(
 
             line_no += 1
             line = line.rstrip("\n")
+            if line=="": 
+                break
 
             severity, matched_rule = classify_by_regex(line, rules)
 
@@ -433,6 +450,7 @@ def process_file(
 
 
 def main() -> int:
+    LOG.info(f"<main>")        
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
