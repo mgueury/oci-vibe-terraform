@@ -36,10 +36,11 @@ if [ "$UI_URL" != "" ]; then
     append_done 
     append_done "In terminal 1, open the ssh tunnel"
     append_done "  ssh -L1521:$DB_HOST:1521 opc@$BASTION_IP"
-    append_done "In terminal 2, connect to the database "
+    append_done "In terminal 2, save the connection to the database."
     append_done "  $HOME/oracle/sqlcl/bin/sql /nolog"
     append_done "  conn -savepwd -save adb $DB_USER@$DB_URL_LOCALHOST"
     append_done "  $DB_PASSWORD"
+    append_done "  select * from dept;"
     append_done "  exit"
     append_done "-----------------------------------------------------------------------"
     append_done "Vibe Coding (Build done in Bastion):"
