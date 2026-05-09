@@ -92,34 +92,10 @@ if is_deploy_compute; then
 
         if [ -f $APP_DIR/start.sh ]; then
             APP_NAME="${APP_DIR//\//-}"
-            echo "Creating restart.sh for APP_DIR=$APP_DIR / APP_NAME=$APP_NAME"
-            # Hardcode the connection to the DB in the start.sh
-            chmod +x $APP_DIR/start.sh
-
-            # Create an "app.service" that starts when the machine starts.
-            cat > /tmp/$APP_NAME.service << EOT
-[Unit]
-Description=App
-After=network.target
-
-[Service]
-Type=simple
-ExecStart=/home/opc/app/$APP_DIR/start.sh
-TimeoutStartSec=0
-User=opc
-
-[Install]
-WantedBy=default.target
-EOT
-            sudo cp /tmp/$APP_NAME.service /etc/systemd/system
-            sudo chmod 664 /etc/systemd/system/$APP_NAME.service
-            sudo systemctl daemon-reload
-            sudo systemctl enable $APP_NAME.service
-            echo "sudo systemctl restart $APP_NAME" >> $APP_DIR/restart.sh 
+            install_linux_service /home/opc/app/$APP_DIR $APP_NAME
         fi  
     # fi  
     if [ -f $APP_DIR/restart.sh ]; then
-        chmod +x $APP_DIR/restart.sh  
         $APP_DIR/restart.sh
     fi
     done 

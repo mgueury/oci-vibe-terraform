@@ -10,3 +10,6 @@ sqlplus -L $DB_USER/$DB_PASSWORD@DB @monitoring.sql
 
 install_python
 install_cline_cli
+
+install_linux_service /home/opc/monitoring monitoring
+./restart.sh

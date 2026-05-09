@@ -89,6 +89,38 @@ app_dir_list() {
 }
 export -f app_dir_list
 
+# -- install_linux_service --------------------------------------------------
+install_linux_service() {
+    SERVICE_DIR=$1
+    SERVICE_NAME=$2
+    
+    echo "Creating restart.sh for DIR=$SERVICE_DIR / NAME=$SERVICE_NAME"
+    # Hardcode the connection to the DB in the start.sh
+    chmod +x $SERVICE_DIR/start.sh
+
+    # Create an "app.service" that starts when the machine starts.
+    cat > /tmp/$SERVICE_NAME.service << EOT
+[Unit]
+Description=App
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=$SERVICE_DIR/start.sh
+TimeoutStartSec=0
+User=opc
+
+[Install]
+WantedBy=default.target
+EOT
+    sudo cp /tmp/$SERVICE_NAME.service /etc/systemd/system
+    sudo chmod 664 /etc/systemd/system/$SERVICE_NAME.service
+    sudo systemctl daemon-reload
+    sudo systemctl enable $SERVICE_NAME.service
+    echo "sudo systemctl restart $APP_NAME" >> $SERVICE_DIR/restart.sh 
+    chmod +x $SERVICE_DIR/restart.sh      
+}
+
 # -- install_java -----------------------------------------------------------
 install_java() {
   # Install the JVM (jdk or graalvm)
