@@ -77,7 +77,7 @@ resource "null_resource" "build_deploy" {
     command = <<-EOT
         cd ${local.project_dir}
         export CALLED_BY_TERRAFORM="true"
-        . ./starter.sh env        
+        . ./starter.sh env -silent       
         # pwd
         # ls -al target
         # cat target/terraform.tfstate
@@ -144,7 +144,7 @@ resource "null_resource" "after_build" {
     command = <<-EOT
         cd ${local.project_dir}    
         export CALLED_BY_TERRAFORM="true"        
-        . ./starter.sh env    
+        . ./starter.sh env -silent
         if [ "$TF_VAR_tls" != "" ]; then
             title "Certificate - Post Deploy"
             certificate_post_deploy 
