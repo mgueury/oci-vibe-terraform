@@ -21,8 +21,8 @@ resource "null_resource" "custom_dependency" {
             fi 
         }
         append "# Custom"
-        append_export "TF_VAR_genai_api_key" "${local.genai_api_key}"
-        append_export "TF_VAR_genai_model" "${local.genai_model}"
+        append_export "TF_VAR_genai_api_key" "${var.genai_api_key}"
+        append_export "TF_VAR_genai_model" "${var.genai_model}"
         EOT
     }
     depends_on = [ null_resource.tf_env ]
