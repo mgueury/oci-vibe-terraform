@@ -94,12 +94,12 @@ install_linux_service() {
     SERVICE_DIR=$1
     SERVICE_NAME=$2
     
-    echo "Creating restart.sh for DIR=$SERVICE_DIR / NAME=$SERVICE_NAME"
-    # Hardcode the connection to the DB in the start.sh
     chmod +x $SERVICE_DIR/start.sh
+    if [ ! -f restart.sh ]; then 
+        echo "Creating restart.sh for DIR=$SERVICE_DIR / NAME=$SERVICE_NAME"
 
-    # Create an "app.service" that starts when the machine starts.
-    cat > /tmp/$SERVICE_NAME.service << EOT
+        # Create an "app.service" that starts when the machine starts.
+        cat > /tmp/$SERVICE_NAME.service << EOT
 [Unit]
 Description=App
 After=network.target
@@ -113,11 +113,12 @@ User=opc
 [Install]
 WantedBy=default.target
 EOT
-    sudo cp /tmp/$SERVICE_NAME.service /etc/systemd/system
-    sudo chmod 664 /etc/systemd/system/$SERVICE_NAME.service
-    sudo systemctl daemon-reload
-    sudo systemctl enable $SERVICE_NAME.service
-    echo "sudo systemctl restart $APP_NAME" >> $SERVICE_DIR/restart.sh 
+        sudo cp /tmp/$SERVICE_NAME.service /etc/systemd/system
+        sudo chmod 664 /etc/systemd/system/$SERVICE_NAME.service
+        sudo systemctl daemon-reload
+        sudo systemctl enable $SERVICE_NAME.service
+        echo "sudo systemctl restart $SERVICE_NAME" >> $SERVICE_DIR/restart.sh 
+    fi
     chmod +x $SERVICE_DIR/restart.sh      
 }
 

@@ -50,3 +50,5 @@ CREATE INDEX log_warnings_hash_ix
 
 CREATE INDEX log_app_rules_app_ix
     ON log_app_rules (app_name, enabled, rule_type);
+
+exit    
