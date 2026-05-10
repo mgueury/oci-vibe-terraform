@@ -208,17 +208,22 @@ def upsert_rule(
 
 
 def classify_by_regex(line: str, rules: RuleCache) -> Tuple[str, Optional[str]]:
-    LOG.info("<classify_by_regex>")        
+    LOG.info(f"<classify_by_regex> {line}")        
     for rule in rules.error:
         pattern = rule.get("regex", "")
+        LOG.info(f"<classify_by_regex> error {pattern}")        
         if pattern and re.search(pattern, line):
+            LOG.info("</classify_by_regex> error")  
             return "error", pattern
 
     for rule in rules.normal:
         pattern = rule.get("regex", "")
+        LOG.info(f"<classify_by_regex> normal {pattern}")        
         if pattern and re.search(pattern, line):
+            LOG.info("</classify_by_regex> normal")  
             return "normal", pattern
 
+    LOG.info("</classify_by_regex> unknown")  
     return "unknown", None
 
 
@@ -281,7 +286,7 @@ def call_cline(prompt: str) -> Dict[str, Any]:
         return json.loads(out)
     except json.JSONDecodeError:
         return {
-            "severity": "warning",
+            "severity": "unknown",
             "reason": out,
             "suggested_regex": None,
             "confidence": 0.0,
@@ -304,14 +309,13 @@ File: {file_path}
 
 Return ONLY a valid JSON array of objects. One object per input line (preserve order).
 Each object must have keys:
-- severity: one of ["normal", "warning", "error"]
+- severity: one of ["normal", "error"]
 - reason: short explanation
 - suggested_regex: optional regex that could detect the severity type with confidence on similar lines later, or null
 - confidence: number from 0 to 1
 
 Rules:
 - If the line is clearly normal, severity = "normal"
-- If it is suspicious but not clearly an error, severity = "warning"
 - If it is an error, severity = "error"
 - If you can learn a useful regex, include it in suggested_regex, set severity, and confidence >=0.8
 - Prefer compact regexes that are specific enough not to overmatch.
@@ -320,10 +324,15 @@ Rules:
 After checking all the lines, if a pattern reappear for lines that could be with confidence used to classify
 such line with regex. Please add a suggested_regex.
 
+As you see, there is no need to return an result by line. The agent is interested in
+- errors
+- suggested_regex that can be reused
+- no need to return anything else
+
 Example of output:
 [
   {{ "severity": "normal", "reason": "normal line", "suggested_regex": "info:.*OK 200", "confidence": 1.0 }},
-  {{ "severity": "warning", "reason": "suspicious activity", "suggested_regex": "Failed login.*", "confidence": 0.85 }}
+  {{ "severity": "error", "reason": "suspicious activity", "suggested_regex": "Failed login.*", "confidence": 0.85 }}
 ]
 
 Log lines:
@@ -340,16 +349,18 @@ Output: (Only a JSON output with the format above!!)
             return [result] * len(lines)
         if isinstance(result, list):
             # Pad or truncate to match input length
+            LOG.info(f"</llm_classify_batch> LLM response incomplete")                  
             while len(result) < len(lines):
                 result.append({
-                    "severity": "warning",
+                    "severity": "unknown",
                     "reason": "LLM response incomplete",
-                    "suggested_regex": None
+                    "suggested_regex": None,
                     "confidence": 0.0,
                 })
             return result[:len(lines)]
+        LOG.info(f"</llm_classify_batch> Unexpected LLM response type")                  
         return [{
-            "severity": "warning",
+            "severity": "unknown",
             "reason": f"Unexpected LLM response type: {type(result)}",
             "suggested_regex": None,
             "confidence": 0.0,
@@ -357,7 +368,7 @@ Output: (Only a JSON output with the format above!!)
     except Exception as exc:
         LOG.exception("LLM batch failed for %s: %s", file_path, exc)
         return [{
-            "severity": "warning",
+            "severity": "unknown",
             "reason": f"LLM failed: {exc}",
             "suggested_regex": None,
             "confidence": 0.0,
@@ -420,7 +431,7 @@ def process_file(
 
     line_no = 0
     batch: List[Tuple[int, str]] = []  # (line_no, line)
-    BATCH_SIZE = 200
+    BATCH_SIZE = 10
 
     with open(log_path, "r", encoding="utf-8", errors="replace") as f:
         f.seek(offset)
@@ -429,6 +440,8 @@ def process_file(
             line = f.readline()
             if not line:
                 break
+
+            line = re.sub(r'\s+', ' ', line)
 
             line_no += 1
             stripped = line.rstrip("\n")
@@ -499,7 +512,7 @@ def process_batch(
         severity = str(llm_result.get("severity", "warning")).lower()
         reason = llm_result.get("reason")
 
-        if severity in {"warning", "error"}:
+        if severity in {"error"}:
             insert_warning(
                 conn=conn,
                 app_name=app_name,
