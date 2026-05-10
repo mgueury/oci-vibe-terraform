@@ -25,9 +25,8 @@ DB_URL = os.environ["DB_URL"]
 # The script sends the prompt on stdin and expects JSON on stdout.
 CLINE_CMD = os.environ.get("CLINE_CMD", "cline").split()
 
-LOG = logging.getLogger("logwatch")
+LOG = logging.getLogger("monitoring")
 LOG.setLevel(logging.DEBUG)
-
 
 @dataclass
 class RuleCache:
@@ -285,7 +284,6 @@ def call_cline(prompt: str) -> Dict[str, Any]:
             "severity": "warning",
             "reason": out,
             "suggested_regex": None,
-            "pattern_type": None,
             "confidence": 0.0,
         }
 
@@ -308,26 +306,30 @@ Return ONLY a valid JSON array of objects. One object per input line (preserve o
 Each object must have keys:
 - severity: one of ["normal", "warning", "error"]
 - reason: short explanation
-- suggested_regex: optional regex that could catch this pattern later, or null
+- suggested_regex: optional regex that could detect the severity type with confidence on similar lines later, or null
 - confidence: number from 0 to 1
-- pattern_type: "normal" or "error" (only if suggested_regex is provided and confidence >= 0.8)
-
-Example of output:
-[
-  {{ "severity": "normal", "reason": "normal line", "suggested_regex": null, "confidence": 1.0, "pattern_type": null }},
-  {{ "severity": "warning", "reason": "suspicious activity", "suggested_regex": "Failed login.*", "confidence": 0.85, "pattern_type": "error" }}
-]
 
 Rules:
 - If the line is clearly normal, severity = "normal"
 - If it is suspicious but not clearly an error, severity = "warning"
 - If it is an error, severity = "error"
-- If you can learn a useful regex, include it in suggested_regex, set pattern_type, and confidence >=0.8
+- If you can learn a useful regex, include it in suggested_regex, set severity, and confidence >=0.8
 - Prefer compact regexes that are specific enough not to overmatch.
 - Process ALL lines. Do not skip any.
 
+After checking all the lines, if a pattern reappear for lines that could be with confidence used to classify
+such line with regex. Please add a suggested_regex.
+
+Example of output:
+[
+  {{ "severity": "normal", "reason": "normal line", "suggested_regex": "info:.*OK 200", "confidence": 1.0 }},
+  {{ "severity": "warning", "reason": "suspicious activity", "suggested_regex": "Failed login.*", "confidence": 0.85 }}
+]
+
 Log lines:
 {log_lines_str}
+
+Output: (Only a JSON output with the format above!!)
 """.strip()
 
     try:
@@ -342,8 +344,7 @@ Log lines:
                 result.append({
                     "severity": "warning",
                     "reason": "LLM response incomplete",
-                    "suggested_regex": None,
-                    "pattern_type": None,
+                    "suggested_regex": None
                     "confidence": 0.0,
                 })
             return result[:len(lines)]
@@ -351,7 +352,6 @@ Log lines:
             "severity": "warning",
             "reason": f"Unexpected LLM response type: {type(result)}",
             "suggested_regex": None,
-            "pattern_type": None,
             "confidence": 0.0,
         }] * len(lines)
     except Exception as exc:
@@ -360,7 +360,6 @@ Log lines:
             "severity": "warning",
             "reason": f"LLM failed: {exc}",
             "suggested_regex": None,
-            "pattern_type": None,
             "confidence": 0.0,
         }] * len(lines)
 
@@ -371,25 +370,26 @@ def maybe_learn_rule(
     rules: RuleCache,
     llm_result: Dict[str, Any],
 ) -> bool:
-    LOG.info("<maybe_learn_rule>")      
+    LOG.info(f"<maybe_learn_rule>")      
     regex_text = llm_result.get("suggested_regex")
-    pattern_type = llm_result.get("pattern_type")
+    severity = llm_result.get("severity")
     confidence = float(llm_result.get("confidence") or 0.0)
+    LOG.info(f"<maybe_learn_rule>regex_text={regex_text} - severity={severity} - confidence={confidence}")      
 
-    if not regex_text or pattern_type not in {"normal", "error"}:
+    if not regex_text or severity not in {"normal", "warning", "error"}:
         return False
 
     if confidence < 0.80:
         return False
 
-    bucket = rules.error if pattern_type == "error" else rules.normal
+    bucket = rules.error if severity == "error" else rules.normal
     if any(r.get("regex") == regex_text for r in bucket):
         return False
 
     upsert_rule(
         conn=conn,
         app_name=app_name,
-        rule_type=pattern_type,
+        rule_type=severity,
         regex_text=regex_text,
         note=llm_result.get("reason", "learned from LLM"),
         source="llm",
