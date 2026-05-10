@@ -8,7 +8,7 @@ cd $PROJECT_DIR
 
 function scp_or_rsync() {
     if command -v rsync &> /dev/null; then
-        rsync -av -e "ssh -o StrictHostKeyChecking=no -i $TF_VAR_ssh_private_path" $1 opc@$BASTION_IP:.
+        rsync -av -e "ssh -o StrictHostKeyChecking=no -i $TF_VAR_ssh_private_path" "$1" opc@$BASTION_IP:.
     else
         scp -r -o StrictHostKeyChecking=no -i $TF_VAR_ssh_private_path $1 opc@$BASTION_IP:/home/opc/.
     fi
@@ -42,7 +42,7 @@ function setup_bastion_dir() {
 }
 
 function scp_bastion() {
-    scp_or_rsync $BASTION_DIR/*    
+    scp_or_rsync "$BASTION_DIR/*"
     RESULT=$?
     if [ $RESULT -eq 0 ]; then
         echo "Success - scp $BASTION_DIR"
