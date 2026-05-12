@@ -73,14 +73,17 @@ EOF
 cd $HOME/migration/app_to_migrate
 create_documentation
 mkdir -p $MIGRATION_DIR/app_to_migrate
+cp USER.md $MIGRATION_DIR/app_to_migrate
+cp TECH.md $MIGRATION_DIR/app_to_migrate
 mv /tmp/cline_cli.log $MIGRATION_DIR/cline_cli_app_to_migrate.log
-cp $HOME/migration/app_to_migrate/*.md $MIGRATION_DIR/app_to_migrate
 
 cd $HOME/app
 create_documentation
 mkdir -p $MIGRATION_DIR/app_target
+cp USER.md $MIGRATION_DIR/app_target
+cp TECH.md $MIGRATION_DIR/app_target
 mv /tmp/cline_cli.log $MIGRATION_DIR/cline_cli_app_target.log
-cp $HOME/app/*.md $MIGRATION_DIR/app_target
+
 
 cd $MIGRATION_DIR
 cline -y << EOF
