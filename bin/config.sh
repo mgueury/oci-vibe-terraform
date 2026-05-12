@@ -199,8 +199,7 @@ if declare -p | grep -q "__TO_FILL__"; then
         esac
 
         echo "TF_VAR_public_ip_filter=${TF_VAR_public_ip_filter}"
-        store_terraform_tfvars public_ip_filter $TF_VAR_public_ip_filter
-        fi      
+        store_terraform_tfvars public_ip_filter $TF_VAR_public_ip_filter  
     fi
 
 
