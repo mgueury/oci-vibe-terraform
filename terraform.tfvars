@@ -3,6 +3,11 @@
 # Prefix to all resources created by terraform
 prefix="vibe"
 
+# IP Range that can access port like 80/443 on the internet. Typically:
+# - All internet - 0.0.0.0/0
+# - or <your_laptop_ip>/32. Get your Laptop IP using, by example, https://whatismyipaddress.com
+public_ip_filter="__TO_FILL__"
+
 # Min length 12 characters, 2 lowercase, 2 uppercase, 2 numbers, 2 special characters. Ex: LiveLab__12345
 db_password="__TO_FILL__"
 
