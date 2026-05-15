@@ -347,11 +347,7 @@ export -f install_cline_cli
 # -- install_opencode -----------------------------------------------------
 
 install_opencode() {
-    set -euo pipefail
-
-    if ! command -v opencode >/dev/null 2>&1; then
-        curl -fsSL https://opencode.ai/install | bash
-    fi
+    curl -fsSL https://opencode.ai/install | bash
     CONFIG_DIR="${HOME}/.config/opencode"
     DATA_DIR="${HOME}/.local/share/opencode"
 
@@ -390,6 +386,7 @@ EOF
 
     chmod 600 "${DATA_DIR}/auth.json"
 }
+export -f install_opencode 
 
 # -- install_instant_client  ------------------------------------------------
 
