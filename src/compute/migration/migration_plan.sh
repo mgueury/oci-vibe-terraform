@@ -3,7 +3,10 @@ MIGRATION_DIR="$HOME/migration/$DATE_POSTFIX"
 
 create_documentation()
 {
-  cline -y > /tmp/cline_cli.log << EOF
+  if [ ! -f USER.md ]; then
+      return
+  fi    
+  cline "
 You are a senior software engineer and technical writer.
 
 Goal:
@@ -59,7 +62,7 @@ Tasks:
    - Clearly state assumptions
    - Highlight unclear or undocumented parts of the code
 
-Output Files:
+Create 2 files:
 - User Manual: USER.md
 - Technical Manual: TECH.md
 
@@ -67,11 +70,10 @@ Output format:
 - Well-structured documentation with clear sections
 - Use diagrams in text form where helpful (e.g., component interactions)
 - Be precise and avoid guessing—flag uncertainties explicitly
-EOF
+" > /tmp/cline_cli.log
 }
 
 cd $HOME/migration/app_to_migrate
-create_documentation
 mkdir -p $MIGRATION_DIR/app_to_migrate
 cp USER.md $MIGRATION_DIR/app_to_migrate
 cp TECH.md $MIGRATION_DIR/app_to_migrate
@@ -86,7 +88,7 @@ mv /tmp/cline_cli.log $MIGRATION_DIR/cline_cli_app_target.log
 
 
 cd $MIGRATION_DIR
-cline -y << EOF
+cline "
 You are a senior software architect and product analyst.
 
 Goal:
@@ -117,8 +119,7 @@ Tasks:
    - Risks and dependencies
    - Assumptions made due to missing or unclear documentation
 
-Output File:
-- gap_analysis.md
+Create a file gap_analysis.md
 
 Output format:
 - Executive summary
@@ -128,7 +129,7 @@ Output format:
 - Recommendations and next steps
 
 Be precise, avoid speculation, and clearly state uncertainties.
-EOF
+"
 
 echo
 cat $MIGRATION_DIR/gap_analysis.md

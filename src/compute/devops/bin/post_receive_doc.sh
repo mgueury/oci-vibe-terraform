@@ -2,8 +2,8 @@
 set -euo pipefail
 
 REPO="$HOME/app.git"
-OUTDIR="$HOME/devops/doc"
-
+DATE_POSTFIX=`date '+%Y%m%d-%H%M%S'`
+OUTDIR="$HOME/devops/tmp/doc_$DATE_POSTFIX"
 mkdir -p "$OUTDIR"
 
 while read -r oldrev newrev refname; do
@@ -29,7 +29,7 @@ while read -r oldrev newrev refname; do
 done
 
 cd $OUTDIR
-cline -y  << EOF
+cline "
 You are a technical writer. Generate clear, accurate documentation from the following git push request.
 
 Input:
@@ -62,4 +62,4 @@ Output format:
 - Usage / Migration
 - Risks / Notes
 - Follow-up checklist
-EOF
+"

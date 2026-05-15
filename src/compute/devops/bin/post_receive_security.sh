@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 REPO="$HOME/app.git"
-OUTDIR="$HOME/devops/security"
-
+DATE_POSTFIX=`date '+%Y%m%d-%H%M%S'`
+OUTDIR="$HOME/devops/tmp/sec_$DATE_POSTFIX"
 mkdir -p "$OUTDIR"
 
 while read -r oldrev newrev refname; do
@@ -13,7 +14,6 @@ while read -r oldrev newrev refname; do
     sha=$(git --git-dir="$REPO" rev-parse --short "$commit")
     author=$(git --git-dir="$REPO" show -s --format='%an <%ae>' "$commit")
     subject=$(git --git-dir="$REPO" show -s --format='%s' "$commit")
-
     {
       echo "# Commit $sha"
       echo
@@ -30,7 +30,7 @@ while read -r oldrev newrev refname; do
 done
 
 cd $OUTDIR
-cline -y  << EOF
+cline "
 You are a senior security engineer and code reviewer. Perform a thorough security and best-practices audit of the following git push request.
 
 Input:
@@ -114,4 +114,4 @@ Output format (strict):
 ## Final Recommendation
 
 Action to take: none -> urgent
-EOF
+"
