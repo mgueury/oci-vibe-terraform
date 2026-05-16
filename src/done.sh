@@ -28,6 +28,7 @@ if [ "$UI_URL" != "" ]; then
         append_done "- REST: $UI_URL/app/dept"
         append_done "- REST: $UI_URL/app/info"    
     fi
+    append_done    
     append_done "-----------------------------------------------------------------------"
     append_done "Vibe Coding:"
     append_done
@@ -67,6 +68,7 @@ if [ "$UI_URL" != "" ]; then
     append_done "  $DB_PASSWORD"
     append_done "  select * from dept;"
     append_done "  exit"
+    append_done
 
 elif [ ! -f $FILE_DONE ]; then
     echo "-" > $FILE_DONE  
