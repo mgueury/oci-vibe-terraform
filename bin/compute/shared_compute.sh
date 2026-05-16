@@ -342,7 +342,7 @@ install_cline_cli() {
 
         # Bug with reasoning (2026-05-16 Cline CLI 2.0)
         if ! grep -q '"reasoning"' $HOME/.cline/data/settings/providers.json; then
-            sed -i '/baseUrl/a\
+            sed -i '/"model"/a\
             "reasoning": { "enabled": false },
             ' $HOME/.cline/data/settings/providers.json
         fi
@@ -362,7 +362,7 @@ install_opencode() {
 
     cat > "${CONFIG_DIR}/opencode.json" <<EOF
 {
-    "$schema": "https://opencode.ai/config.json",
+    "\$schema": "https://opencode.ai/config.json",
     "provider": {
         "oci": {
             "npm": "@ai-sdk/openai-compatible",
