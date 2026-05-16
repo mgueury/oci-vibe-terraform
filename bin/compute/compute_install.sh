@@ -74,7 +74,7 @@ if ! grep -q "# Build Bastion" $HOME/.bashrc; then
         install_cline_cli
 
         # OpenCode
-        install_opencode
+        install_opencode        
     fi
 fi
 
@@ -83,3 +83,68 @@ fi
 # Build all app* directories
 $HOME/compute/rebuild.sh
 
+# -- app/start*.sh -----------------------------------------------------------
+if is_deploy_compute; then 
+    title "Compute Install - create restart.sh"
+    cd $HOME/app
+    for APP_DIR in `app_dir_list`; do
+    # if [ -f $APP_DIR/restart.sh ]; then
+    #  echo "$APP_DIR/restart.sh exists already"
+    # else
+        rm -f $APP_DIR/restart.sh 
+
+        if [ -f $APP_DIR/start.sh ]; then
+            APP_NAME="${APP_DIR//\//-}"
+            install_linux_service /home/opc/app/$APP_DIR $APP_NAME
+        fi  
+    # fi  
+    if [ -f $APP_DIR/restart.sh ]; then
+        $APP_DIR/restart.sh
+    fi
+    done 
+fi
+
+# -- install_opencode
+
+set -euo pipefail
+
+if ! command -v opencode >/dev/null 2>&1; then
+    curl -fsSL https://opencode.ai/install | bash
+fi
+CONFIG_DIR="${HOME}/.config/opencode"
+DATA_DIR="${HOME}/.local/share/opencode"
+
+mkdir -p "${CONFIG_DIR}" "${DATA_DIR}"
+
+cat > "${CONFIG_DIR}/opencode.json" <<EOF
+{
+    "$schema": "https://opencode.ai/config.json",
+    "provider": {
+        "oci": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "OCI Generative AI",
+            "options": {
+                "baseURL": "https://inference.generativeai.${TF_VAR_region}.oci.oraclecloud.com/20231130/actions/v1"
+            },
+            "models": {
+                "${TF_VAR_genai_model}": {
+                    "name": "${TF_VAR_genai_model}"
+                }
+            }
+        }
+    },
+    "model": "${TF_VAR_genai_model}/${TF_VAR_genai_model}",
+    "small_model": "${TF_VAR_genai_model}/${TF_VAR_genai_model}"
+}
+EOF
+
+cat > "${DATA_DIR}/auth.json" <<EOF
+{
+    "oci": {
+        "type": "api",
+        "key": "${TF_VAR_genai_api_key}"
+    }
+}
+EOF
+
+chmod 600 "${DATA_DIR}/auth.json"
