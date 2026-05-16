@@ -339,6 +339,13 @@ install_cline_cli() {
         echo "<install_cline_cli> SKIP: Missing variables TF_VAR_genai_api_key=$TF_VAR_genai_api_key / TF_VAR_genai_model=$TF_VAR_genai_model / TF_VAR_region=$TF_VAR_region"
     else 
         cline auth -p openai -k $TF_VAR_genai_api_key -b https://inference.generativeai.${TF_VAR_region}.oci.oraclecloud.com -m $TF_VAR_genai_model
+
+        # Bug with reasoning (2026-05-16 Cline CLI 2.0)
+        if ! grep -q '"reasoning"' $HOME/.cline/data/settings/providers.json; then
+            sed -i '/baseUrl/a\
+            "reasoning": { "enabled": false },
+            ' $HOME/.cline/data/settings/providers.json
+        fi
     fi 
     # xai.grok-4-1-fast-non-reasoning
 }

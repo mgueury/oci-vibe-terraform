@@ -28,21 +28,6 @@ if [ "$UI_URL" != "" ]; then
         append_done "- REST: $UI_URL/app/info"    
     fi
     append_done "-----------------------------------------------------------------------"
-    append_done "DB connection:"
-    append_done
-    append_done "DB_USER=$DB_USER"
-    append_done "DB_PASSWORD=$DB_PASSWORD"
-    append_done "DB_URL=$DB_URL"
-    append_done 
-    append_done "In terminal 1, open the ssh tunnel"
-    append_done "  ssh -L1521:$DB_HOST:1521 opc@$BASTION_IP"
-    append_done "In terminal 2, save the connection to the database."
-    append_done "  \$HOME/oracle/sqlcl/bin/sql /nolog"
-    append_done "  conn -savepwd -save adb $DB_USER@$DB_URL_LOCALHOST"
-    append_done "  $DB_PASSWORD"
-    append_done "  select * from dept;"
-    append_done "  exit"
-    append_done "-----------------------------------------------------------------------"
     append_done "Vibe Coding (Build done in Bastion):"
     append_done
     if [ "$TF_VAR_your_public_ssh_key" != "" ]; then
@@ -65,6 +50,22 @@ if [ "$UI_URL" != "" ]; then
     append_done "> cat compute/rebuild.log"
     append_done "> cd app/xxxx" 
     append_done "> cat xxxx.log" 
+    append_done
+    append_done "-----------------------------------------------------------------------"
+    append_done "Database Connection:"
+    append_done
+    append_done "DB_USER=$DB_USER"
+    append_done "DB_PASSWORD=$DB_PASSWORD"
+    append_done "DB_URL=$DB_URL"
+    append_done 
+    append_done "In terminal 1, open the ssh tunnel"
+    append_done "  ssh -L1521:$DB_HOST:1521 opc@$BASTION_IP"
+    append_done "In terminal 2, save the connection to the database."
+    append_done "  \$HOME/oracle/sqlcl/bin/sql /nolog"
+    append_done "  conn -savepwd -save adb $DB_USER@$DB_URL_LOCALHOST"
+    append_done "  $DB_PASSWORD"
+    append_done "  select * from dept;"
+    append_done "  exit"
 
 elif [ ! -f $FILE_DONE ]; then
     echo "-" > $FILE_DONE  
