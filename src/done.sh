@@ -16,7 +16,8 @@ DB_URL_LOCALHOST=$(echo "$DB_URL" | sed 's/(host=[^)]*)/(host=localhost)/')
 
 # Do not show the Done URLs if after_build.sh exists 
 if [ "$UI_URL" != "" ]; then
-    echo "URLs" > $FILE_DONE
+    echo "-----------------------------------------------------------------------"  > $FILE_DONE
+    append_done "URL:"
     append_done "- User Interface: $UI_URL/"     
     if [ "$UI_HTTP" != "" ]; then
         append_done "- HTTP : $UI_HTTP/"
@@ -28,7 +29,7 @@ if [ "$UI_URL" != "" ]; then
         append_done "- REST: $UI_URL/app/info"    
     fi
     append_done "-----------------------------------------------------------------------"
-    append_done "Vibe Coding (Build done in Bastion):"
+    append_done "Vibe Coding:"
     append_done
     if [ "$TF_VAR_your_public_ssh_key" != "" ]; then
         append_done "1. Check that you can login from your laptop to the bastion using the private key associated with your_public_ssh_key in terraform.tfvars"
@@ -52,7 +53,7 @@ if [ "$UI_URL" != "" ]; then
     append_done "> cat xxxx.log" 
     append_done
     append_done "-----------------------------------------------------------------------"
-    append_done "Database Connection:"
+    append_done "Database:"
     append_done
     append_done "DB_USER=$DB_USER"
     append_done "DB_PASSWORD=$DB_PASSWORD"
