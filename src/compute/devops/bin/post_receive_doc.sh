@@ -33,12 +33,7 @@ cline "
 You are a technical writer. Generate clear, accurate documentation from the following git push request.
 
 Input:
-- Commit message / PR title:
-- PR description:
-- Changed files:
-- Diff or patch:
-- Related issue(s):
-- Any notes from the author:
+Check the content of $sha.md
 
 Task:
 1. Read the request and infer the purpose of the change.

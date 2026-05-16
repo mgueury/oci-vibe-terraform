@@ -34,12 +34,7 @@ cline "
 You are a senior security engineer and code reviewer. Perform a thorough security and best-practices audit of the following git push request.
 
 Input:
-- Commit message / PR title:
-- PR description:
-- Changed files:
-- Diff or patch:
-- Related issue(s):
-- Any notes from the author:
+Check the content of $sha.md
 
 Task:
 Conduct a structured review with explicit reasoning. Do NOT summarize everything in one paragraph.
