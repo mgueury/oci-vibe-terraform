@@ -72,6 +72,9 @@ if ! grep -q "# Build Bastion" $HOME/.bashrc; then
 
         # Cline CLI
         install_cline_cli
+
+        # OpenCode
+        install_opencode
     fi
 fi
 
@@ -79,25 +82,4 @@ fi
 # Application Specific installation
 # Build all app* directories
 $HOME/compute/rebuild.sh
-
-# -- app/start*.sh -----------------------------------------------------------
-if is_deploy_compute; then 
-    title "Compute Install - create restart.sh"
-    cd $HOME/app
-    for APP_DIR in `app_dir_list`; do
-    # if [ -f $APP_DIR/restart.sh ]; then
-    #  echo "$APP_DIR/restart.sh exists already"
-    # else
-        rm -f $APP_DIR/restart.sh 
-
-        if [ -f $APP_DIR/start.sh ]; then
-            APP_NAME="${APP_DIR//\//-}"
-            install_linux_service /home/opc/app/$APP_DIR $APP_NAME
-        fi  
-    # fi  
-    if [ -f $APP_DIR/restart.sh ]; then
-        $APP_DIR/restart.sh
-    fi
-    done 
-fi
 
