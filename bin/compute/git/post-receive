@@ -40,5 +40,5 @@ for POST_SH in $HOME/devops/bin/*.sh; do
     POST_MD="$LOG_DIR/${POST_NAME}.md"
     POST_LOG="$LOG_DIR/${POST_NAME}.log"
     echo "$POST_NAME: See $POST_MD"
-    "$POST_SH" > $POST_LOG 2>&1 &
+    "$POST_SH" < $COMMITS_LOG > $POST_LOG 2>&1 &
 done
