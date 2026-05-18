@@ -2,9 +2,6 @@
 set -euo pipefail
 
 REPO="$HOME/app.git"
-DATE_POSTFIX=`date '+%Y%m%d-%H%M%S'`
-OUTDIR="$HOME/devops/tmp/sec_$DATE_POSTFIX"
-mkdir -p "$OUTDIR"
 
 while read -r oldrev newrev refname; do
   [ "$newrev" = "0000000000000000000000000000000000000000" ] && continue
@@ -24,7 +21,7 @@ while read -r oldrev newrev refname; do
       echo
       echo "## Diff"
       git --git-dir="$REPO" show --stat --patch --format=medium "$commit"
-    } > "$OUTDIR/$sha.log"
+    } > git_diff_security.log
   done
 done
 
@@ -33,7 +30,7 @@ cline "
 You are a senior security engineer and code reviewer. Perform a thorough security and best-practices audit of the following git push request.
 
 Input:
-Check the content of $sha.log
+Check the content of git_diff_security.log
 
 Output:
 Create a file security.md
