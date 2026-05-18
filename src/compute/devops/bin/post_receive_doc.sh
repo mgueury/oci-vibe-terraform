@@ -33,6 +33,7 @@ You are a technical writer. Generate clear, accurate documentation from the foll
 
 Input:
 Check the content of git_diff_doc.log
+Base your answer on this file only and on nothing else. Only on the git output of the input file.
 
 Task:
 1. Read the request and infer the purpose of the change.
