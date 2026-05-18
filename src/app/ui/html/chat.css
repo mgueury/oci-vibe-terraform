@@ -169,8 +169,8 @@ button img {
     border-radius: 4px;
     margin-top: 8px;
     min-width: 15em;
-    max-width: 95%;
-    width: 95%;
+   /* max-width: 95%;
+       width: 95%; */
     border-collapse: collapse;
 }
 
