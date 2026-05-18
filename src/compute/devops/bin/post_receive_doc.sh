@@ -33,7 +33,10 @@ cline "
 You are a technical writer. Generate clear, accurate documentation from the following git push request.
 
 Input:
-Check the content of $sha.md
+Check the content of commit.log
+
+Output:
+Create a file doc.log
 
 Task:
 1. Read the request and infer the purpose of the change.
