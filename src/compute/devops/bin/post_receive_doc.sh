@@ -31,9 +31,6 @@ You are a technical writer. Generate clear, accurate documentation from the foll
 Input:
 Check the content of git_diff_doc.log
 
-Output:
-Create a file doc.md with the output result
-
 Task:
 1. Read the request and infer the purpose of the change.
 2. Write documentation that explains:
@@ -48,6 +45,9 @@ Task:
 5. Do not invent details that are not supported by the input. Mark unclear points as "Needs confirmation" rather than guessing.
 6. If the change affects an API, CLI, UI, or operational behavior, include a short "Before / After" section.
 7. End with a short checklist of follow-up items for reviewers or maintainers.
+
+Output:
+Create a file doc.md with the output result
 
 Output format:
 - Title

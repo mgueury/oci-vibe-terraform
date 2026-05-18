@@ -31,9 +31,6 @@ You are a senior security engineer and code reviewer. Perform a thorough securit
 Input:
 Check the content of git_diff_security.log
 
-Output:
-Create a file security.md
-
 Task:
 Conduct a structured review with explicit reasoning. Do NOT summarize everything in one paragraph.
 
@@ -81,6 +78,9 @@ Rules:
 - Do NOT hallucinate issues
 - If unsure, say "Needs confirmation"
 - Prefer precise technical language over vague statements
+
+Output:
+Create a file security.md with the output result
 
 Output format (strict):
 
