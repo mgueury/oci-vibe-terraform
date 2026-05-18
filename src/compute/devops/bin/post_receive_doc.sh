@@ -25,7 +25,6 @@ while read -r oldrev newrev refname; do
   done
 done
 
-cd $OUTDIR
 cline "
 You are a technical writer. Generate clear, accurate documentation from the following git push request.
 
