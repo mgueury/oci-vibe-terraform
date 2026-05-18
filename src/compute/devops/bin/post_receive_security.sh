@@ -31,11 +31,11 @@ ls -al
 cline "
 You are a senior security engineer and code reviewer. Perform a thorough security and best-practices audit of the following git push request.
 
-Input:
+# Input
 Check the content of git_diff_security.log
 Base your answer on this file only and on nothing else. Only on the git output of the input file.
 
-Task:
+# Task
 Conduct a structured review with explicit reasoning. Do NOT summarize everything in one paragraph.
 
 1. High-level summary
@@ -77,38 +77,26 @@ Conduct a structured review with explicit reasoning. Do NOT summarize everything
 6. Final recommendation
    - Short justification
 
-Rules:
+# Rules
 - Be explicit and structured — no single-paragraph answers
 - Do NOT hallucinate issues
 - If unsure, say "Needs confirmation"
 - Prefer precise technical language over vague statements
 
-Output:
+# Output
+
 Create a file security.md with the output result
 
-Output format (strict):
+# Output format:
 
-## Summary
-...
-
-## Security Review
-- Secrets exposure: ...
-- Input validation: ...
-- Authentication / Authorization: ...
-- Network exposure: ...
-- Data handling: ...
-- Dependencies: ...
-
-## Best Practices
-...
-
-## Findings
-...
-
-## Positive Signals
-...
-
-## Final Recommendation
-
-Action to take: none -> urgent
+- Summary
+- Security Review
+    - Secrets exposure: ...
+    - Input validation: ...
+    - Authentication / Authorization: ...
+    - Network exposure: ...
+    - Data handling: ...
+    - Dependencies: ...
+- Final Recommendation
+- Action to take: none -> urgent
 "
