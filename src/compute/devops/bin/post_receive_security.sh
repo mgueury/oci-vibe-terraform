@@ -24,7 +24,7 @@ while read -r oldrev newrev refname; do
       echo
       echo "## Diff"
       git --git-dir="$REPO" show --stat --patch --format=medium "$commit"
-    } > "$OUTDIR/$sha.md"
+    } > "$OUTDIR/$sha.log"
   done
 done
 
@@ -33,7 +33,7 @@ cline "
 You are a senior security engineer and code reviewer. Perform a thorough security and best-practices audit of the following git push request.
 
 Input:
-Check the content of commits.log
+Check the content of $sha.log
 
 Output:
 Create a file security.log

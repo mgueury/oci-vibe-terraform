@@ -24,7 +24,7 @@ while read -r oldrev newrev refname; do
       echo
       echo "## Diff"
       git --git-dir="$REPO" show --stat --patch --format=medium "$commit"
-    } > "$OUTDIR/$sha.md"
+    } > "$OUTDIR/$sha.log"
   done
 done
 
@@ -34,9 +34,6 @@ You are a technical writer. Generate clear, accurate documentation from the foll
 
 Input:
 Check the content of $sha.log
-
-Output:
-Create a file doc.log
 
 Task:
 1. Read the request and infer the purpose of the change.
@@ -60,6 +57,9 @@ Output format:
 - Usage / Migration
 - Risks / Notes
 - Follow-up checklist
+
+Output:
+Create a file doc.md with the output result
 "
 cd -
-cp $OUTDIR/doc.log .
+cp $OUTDIR/doc.md .
