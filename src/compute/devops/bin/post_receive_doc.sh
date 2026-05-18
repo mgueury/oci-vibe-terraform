@@ -35,6 +35,9 @@ You are a technical writer. Generate clear, accurate documentation from the foll
 Input:
 Check the content of $sha.log
 
+Output:
+Create a file doc.md with the output result
+
 Task:
 1. Read the request and infer the purpose of the change.
 2. Write documentation that explains:
@@ -57,9 +60,6 @@ Output format:
 - Usage / Migration
 - Risks / Notes
 - Follow-up checklist
-
-Output:
-Create a file doc.md with the output result
 "
 cd -
 cp $OUTDIR/doc.md .

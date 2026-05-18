@@ -36,7 +36,7 @@ Input:
 Check the content of $sha.log
 
 Output:
-Create a file security.log
+Create a file security.md
 
 Task:
 Conduct a structured review with explicit reasoning. Do NOT summarize everything in one paragraph.
@@ -113,4 +113,4 @@ Output format (strict):
 Action to take: none -> urgent
 "
 cd -
-cp $OUTDIR/security.log .
+cp $OUTDIR/security.md .
