@@ -33,7 +33,7 @@ cline "
 You are a technical writer. Generate clear, accurate documentation from the following git push request.
 
 Input:
-Check the content of commits.log
+Check the content of $sha.log
 
 Output:
 Create a file doc.log
@@ -61,3 +61,5 @@ Output format:
 - Risks / Notes
 - Follow-up checklist
 "
+cd -
+cp $OUTDIR/doc.log .
