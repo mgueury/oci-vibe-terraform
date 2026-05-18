@@ -33,7 +33,7 @@ cline "
 You are a senior security engineer and code reviewer. Perform a thorough security and best-practices audit of the following git push request.
 
 Input:
-Check the content of commit.log
+Check the content of commits.log
 
 Output:
 Create a file security.log

@@ -17,7 +17,7 @@ mkdir -p $LOG_DIR
 cd $LOG_DIR
 
 REBUILD_LOG="$LOG_DIR/rebuild.log"
-COMMITS_LOG="${LOG_DIR}/commits.logs"
+COMMITS_LOG="${LOG_DIR}/commits.log"
 
 while read oldrev newrev refname
 do

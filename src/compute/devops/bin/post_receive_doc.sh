@@ -33,7 +33,7 @@ cline "
 You are a technical writer. Generate clear, accurate documentation from the following git push request.
 
 Input:
-Check the content of commit.log
+Check the content of commits.log
 
 Output:
 Create a file doc.log
