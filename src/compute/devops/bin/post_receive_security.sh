@@ -25,6 +25,9 @@ while read -r oldrev newrev refname; do
   done
 done
 
+sleep 5
+ls -al
+
 cline "
 You are a senior security engineer and code reviewer. Perform a thorough security and best-practices audit of the following git push request.
 

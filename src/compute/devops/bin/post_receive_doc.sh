@@ -25,6 +25,9 @@ while read -r oldrev newrev refname; do
   done
 done
 
+sleep 5
+ls -al
+
 cline "
 You are a technical writer. Generate clear, accurate documentation from the following git push request.
 
