@@ -17,8 +17,6 @@ mkdir -p $LOG_DIR
 cd $LOG_DIR
 
 REBUILD_LOG="$LOG_DIR/rebuild.log"
-DOC_LOG="$LOG_DIR/doc.log"
-SECURITY_LOG="$LOG_DIR/security.log"
 COMMITS_LOG="${LOG_DIR}/commits.logs"
 
 while read oldrev newrev refname
@@ -39,7 +37,8 @@ $HOME/compute/rebuild.sh >> $REBUILD_LOG 2>&1 &
 
 for POST_SH in $HOME/devops/bin/*.sh; do
     POST_NAME=$(echo "$POST_SH" | sed -n 's#.*/bin/post_receive_\([^)]*\)\.sh#\1#p')
-    POST_LOG="$HOME/devops/${POST_NAME}.${RUN_ID}.log"
-    echo "$POST_NAME: See $POST_LOG"
-    "$POST_SH" < $COMMITS_LOG 2>&1 &
+    POST_MD="$LOG_DIR/${POST_NAME}.md"
+    POST_LOG="$LOG_DIR/${POST_NAME}.log"
+    echo "$POST_NAME: See $POST_MD"
+    "$POST_SH" < $COMMITS_LOG > $POST_LOG 2>&1 &
 done
