@@ -33,6 +33,7 @@ You are a senior security engineer and code reviewer. Perform a thorough securit
 
 Input:
 Check the content of git_diff_security.log
+Base your answer on this file only and on nothing else. Only on the git output of the input file.
 
 Task:
 Conduct a structured review with explicit reasoning. Do NOT summarize everything in one paragraph.
