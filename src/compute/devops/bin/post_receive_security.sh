@@ -108,5 +108,3 @@ Output format (strict):
 
 Action to take: none -> urgent
 "
-cd -
-cp $OUTDIR/security.md .
